@@ -1,6 +1,21 @@
 from math import sqrt
 
 def calculate_error(forecasts, curr_frame, centre):
+    """
+    Evaluate stored trajectory forecasts against the current observed position.
+
+    For every prediction targeting the current frame, the function computes
+    the Euclidean position error. Once a 10-frame forecast is complete, 
+    ADE and FDE are returned.
+
+    Args:
+        forecasts: List of stored forecasts for one track ID
+        curr_frame: Index of the current video frame
+        centre: Observed bounding-box center (x, y) in pixels
+
+    Returns:
+        List of (ADE, FDE) tuples for completed forecasts on this frame.
+    """
     completed = []
     for forecast in forecasts:
         for prediction in forecast["predictions"]:
@@ -20,5 +35,5 @@ def calculate_error(forecasts, curr_frame, centre):
                     fde = forecast["errors"][-1]
 
                     completed.append((ade, fde))
-                    
+
     return completed

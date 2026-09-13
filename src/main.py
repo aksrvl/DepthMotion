@@ -19,9 +19,11 @@ fdes = []
 while cap.isOpened():
     success, frame = cap.read()
     if success:
+        #Run object detection and tracking  
         result = model.track(frame, persist=True, tracker="bytetrack.yaml", conf=0.25)
+
+        #Extract detection results
         name = [result[0].names[cls.item()] for cls in result[0].boxes.cls]
-        conf = result[0].boxes.conf
         track_id = result[0].boxes.id.numpy()
         box = result[0].boxes.xyxy.numpy()
         frame_count += 1
@@ -30,26 +32,28 @@ while cap.isOpened():
             curr_track_id = detection[0]
             if curr_track_id not in forecasts:
                 forecasts[curr_track_id] = []
+
+            # Estimate the filtered current position and velocity using a Kalman filter
             filtered_position, velocity = kalman.filter(curr_track_id, detection[1], kalman_filters)
 
             x_center = (detection[1][0] + detection[1][2]) / 2
             y_center = (detection[1][1] + detection[1][3]) / 2
             centre = (x_center, y_center)
 
+            # Track the trajectory history of the object and visualize it on the frame
             tracking.trajectory_history(curr_track_id, filtered_position, history, frame)
 
+            #Evaluate the forecasted trajectory against the actual position of the object
             completed = evaluation.calculate_error(forecasts[curr_track_id], frame_count, centre)
 
             for ade, fde in completed:
                 ades.append(ade)
                 fdes.append(fde)
 
+            # Generate and visualize a 10-frame constant-velocity forecast
             future_positions = forecasting.trajectory_forecast(filtered_position, velocity, frame, frame_count)
             new_forecast = {"predictions": future_positions, "errors": []}
             forecasts[curr_track_id].append(new_forecast)
-
-            
-            
 
         cv.imshow('frame', frame)
 
