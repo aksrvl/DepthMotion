@@ -5,6 +5,7 @@ import sys
 import os
 import torch
 import math
+from matplotlib import pyplot as plt
 
 sys.path.append(
     os.path.join(os.path.dirname(__file__), "..", "third_party")
@@ -117,5 +118,17 @@ for evaluation in evaluation_results:
     elif evaluation[1] < 80:
           depth_range_errors["60-80"].append(evaluation[2])
 
+distance_ranges = []
+mae_by_distance = []
 for key in depth_range_errors:
-      print(key, "m: N = ", len(depth_range_errors[key]), "MAE = ", sum(depth_range_errors[key])/len(depth_range_errors[key]), "m")
+    range_mae = sum(depth_range_errors[key])/len(depth_range_errors[key])
+    distance_ranges.append(key)
+    mae_by_distance.append(range_mae)
+    print(key, "m: N = ", len(depth_range_errors[key]), "MAE = ", range_mae, "m")
+
+plt.plot(distance_ranges, mae_by_distance, marker="o")
+plt.xlabel("Ground Truth Distance (m)")
+plt.ylabel("MAE (m)")
+plt.title("Depth Estimation Error vs. Distance")
+plt.grid(visible=True)
+plt.show()
