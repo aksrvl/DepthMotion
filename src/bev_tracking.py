@@ -81,5 +81,41 @@ for image_file, depth_file in zip(files_RGB, files_depth):
                     track_history[track_id] = []
                 track_history[track_id].append((float(X), float(Z)))
 
+plt.figure(figsize=(10, 8))
 for key in track_history:
     print("ID", key, "->", track_history[key])
+    if len(track_history[key]) < 5:
+        continue
+    X_values = []
+    Z_values = []
+    for pair in track_history[key]:
+        X_values.append(pair[0])
+        Z_values.append(pair[1])
+    plt.plot(
+        X_values,
+        Z_values,
+        marker="o",
+        markersize=4,
+        linewidth=1.5,
+        label=f"ID {int(key)}"
+    )
+plt.scatter(
+    0,
+    0,
+    marker="^",
+    s=120,
+    label="Camera"
+)
+plt.xlim(-15, 15)
+plt.ylim(0, 80)
+plt.xlabel("X Position (m)")
+plt.ylabel("Depth Z (m)")
+plt.title("Tracked Object Trajectories in BEV")
+plt.grid(alpha=0.3)
+plt.legend(
+    bbox_to_anchor=(1.02, 1),
+    loc="upper left"
+)
+
+plt.tight_layout()
+plt.show()
