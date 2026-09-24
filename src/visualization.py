@@ -1,5 +1,6 @@
 import cv2 as cv
 import matplotlib.pyplot as plt
+import numpy as np
 
 def draw_detections(frame, tracked_objects):
     for track_id, box in tracked_objects:
@@ -31,7 +32,8 @@ def draw_bev(track_history, forecasts):
         forecasts: Dictionary containing future predicted (X, Z)
             positions for each track ID.
     """
-    fig, ax = plt.subplots(figsize=(6,8))
+    colors = plt.cm.tab20.colors
+    fig, ax = plt.subplots(figsize=(10, 5))
     ax.set_xlim(-15, 15)
     ax.set_ylim(0, 80)
 
@@ -46,25 +48,7 @@ def draw_bev(track_history, forecasts):
     marker="^",
     s=100,
     label="Camera"
-    )   
-
-    # Filtered trajectory history
-    for track_id, positions in track_history.items():
-        positions = positions[-20:]
-
-        if len(positions) < 2:
-            continue
-
-        X_history = [position[0] for position in positions]
-        Z_history = [position[1] for position in positions]
-
-        ax.plot(
-            X_history,
-            Z_history,
-            marker="o",
-            markersize=3,
-            label=f"ID {int(track_id)}"
-        )
+    )  
 
     track_colors = {}
 
@@ -78,22 +62,25 @@ def draw_bev(track_history, forecasts):
         X_history = [position[0] for position in positions]
         Z_history = [position[1] for position in positions]
 
+        color = colors[int(track_id)%len(colors)]
+
         line, = ax.plot(
             X_history,
             Z_history,
             marker="o",
-            markersize=3
+            markersize=3,
+            color=color
         )
 
         # Remember the color assigned by matplotlib
-        track_colors[track_id] = line.get_color()
+        track_colors[track_id] = color
 
         # Write ID next to the current position
         ax.text(
             X_history[-1],
             Z_history[-1],
             f" ID {int(track_id)}",
-            color=line.get_color(),
+            color=color,
             fontsize=8,
             clip_on=True
         )
@@ -127,5 +114,13 @@ def draw_bev(track_history, forecasts):
         )
 
     plt.tight_layout()
-    plt.show()
+
+    fig.canvas.draw()
+
+    bev_image = np.asarray(fig.canvas.buffer_rgba())
+    bev_image = cv.cvtColor(bev_image, cv.COLOR_RGBA2BGR)
+
+    plt.close(fig)
+
+    return bev_image
 
