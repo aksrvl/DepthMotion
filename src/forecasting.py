@@ -1,27 +1,28 @@
-import cv2 as cv
-
-def trajectory_forecast(position, velocity, frame, curr_frame):
+def trajectory_forecast(X, Z, velocity, curr_frame):
     """
-    Predict the object's 2D trajectory for the next 10 frames
-    using a constant-velocity motion model
+    Predict the object's BEV trajectory for the next 10 frames
+    using a constant-velocity motion model.
+
+    The prediction starts from the current Kalman-filtered BEV position
+    (X, Z) and uses the estimated velocity (vX, vZ).
 
     Args:
-        position: Current filtered (x, y) position
-        velocity:Estimated (vx, vy) velocity
-        frame: Current video frame for visualization
-        curr_frame: Index of the current video frame
+        X: Current filtered lateral position in meters.
+        Z: Current filtered forward depth in meters.
+        velocity: Estimated (vX, vZ) velocity in meters per frame.
+        curr_frame: Index of the current frame.
 
     Returns:
-        List of (frame_index, predicted_x, predicted_y) tuples
+        List of (frame_index, predicted_X, predicted_Z) tuples
+        for the next 10 frames.
     """
     future_positions = []
-    curr_x = position[0]
-    curr_y = position[1]
-    v_x = velocity[0]
-    v_y = velocity[1]
+    curr_X = X
+    curr_Z = Z
+    v_X = velocity[0]
+    v_Z = velocity[1]
     for n in range(1, 11):
-        future_x = curr_x + n*v_x
-        future_y = curr_y + n*v_y
-        future_positions.append((curr_frame+n, future_x, future_y))
-        cv.circle(frame, (int(future_x), int(future_y)), 5, (255, 0, 0), -1)
+        future_X = curr_X + n*v_X
+        future_Z = curr_Z+ n*v_Z
+        future_positions.append((curr_frame+n, future_X, future_Z))
     return future_positions
