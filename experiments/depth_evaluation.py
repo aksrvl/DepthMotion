@@ -6,11 +6,9 @@ import os
 import torch
 import math
 from matplotlib import pyplot as plt
-
 sys.path.append(
     os.path.join(os.path.dirname(__file__), "..", "third_party")
 )
-
 from depth_anything_v2.dpt import DepthAnythingV2
 
 device = (

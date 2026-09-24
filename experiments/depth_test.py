@@ -5,14 +5,13 @@ import torch
 import matplotlib.pyplot as plt
 from ultralytics import YOLO
 import numpy as np
-yolo_model = YOLO("yolo26s.pt")
-
-# Make the copied Depth Anything V2 code importable
 sys.path.append(
     os.path.join(os.path.dirname(__file__), "..", "third_party")
 )
 
 from depth_anything_v2.dpt import DepthAnythingV2
+
+yolo_model = YOLO("yolo26s.pt")
 
 device = (
     "cuda" if torch.cuda.is_available()

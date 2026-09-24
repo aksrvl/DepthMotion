@@ -5,6 +5,13 @@ import sys
 import os
 import torch
 import matplotlib.pyplot as plt
+sys.path.append(
+    os.path.join(os.path.dirname(__file__), "..", "third_party")
+)
+from depth_anything_v2.dpt import DepthAnythingV2
+sys.path.append(
+    os.path.join(os.path.dirname(__file__), "..", "src")
+)
 import kalman
 import forecasting
 
@@ -25,11 +32,6 @@ fy = float(values[3])
 cx = float(values[4])
 cy = float(values[5])
 
-sys.path.append(
-    os.path.join(os.path.dirname(__file__), "..", "third_party")
-)
-
-from depth_anything_v2.dpt import DepthAnythingV2
 
 device = (
     "cuda" if torch.cuda.is_available()

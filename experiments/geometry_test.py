@@ -4,17 +4,15 @@ import numpy as np
 import sys
 import os
 import torch
-import matplotlib.pyplot as plt
+sys.path.append(
+    os.path.join(os.path.dirname(__file__), "..", "third_party")
+)
+from depth_anything_v2.dpt import DepthAnythingV2
 
 model = YOLO("yolo26n.pt")
 results = model('./data/rgb_00000.jpg')
 results[0].show()
 
-sys.path.append(
-    os.path.join(os.path.dirname(__file__), "..", "third_party")
-)
-
-from depth_anything_v2.dpt import DepthAnythingV2
 
 device = (
     "cuda" if torch.cuda.is_available()
@@ -48,9 +46,6 @@ fy = float(values[3])
 cx = float(values[4])
 cy = float(values[5])
 
-X_values = []
-Z_values = []
-
 for result in results:
     boxes = result.boxes.xyxy.cpu().numpy()
     for box in boxes:
@@ -64,18 +59,10 @@ for result in results:
         centre_region = depth[y_1:y_2, x_1:x_2]
         median_depth = np.median(centre_region)
         Z = median_depth
+        print("u: ",u, "v: ", v, "depth: ", median_depth)
+
         X = (u - cx)*(Z/fx)
+        Y = (v - cy)*(Z/fy)
 
-        X_values.append(X)
-        Z_values.append(Z)
+        print("X=", X, "Y=", Y)
 
-plt.scatter(X_values, Z_values)
-plt.scatter(0, 0, marker="^", s=100)
-plt.xlim(-15, 15)
-plt.ylim(0, 80)
-plt.xlabel("X (m)")
-plt.ylabel("Z (m)")
-plt.grid()
-for X, Z in zip(X_values, Z_values):
-    plt.text(X, Z, f"{Z:.1f} m")
-plt.show()
