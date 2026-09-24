@@ -32,7 +32,6 @@ fy = float(values[3])
 cx = float(values[4])
 cy = float(values[5])
 
-
 device = (
     "cuda" if torch.cuda.is_available()
     else "mps" if torch.backends.mps.is_available()

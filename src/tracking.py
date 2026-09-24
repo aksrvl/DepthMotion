@@ -1,22 +1,36 @@
-import cv2 as cv
+from ultralytics import YOLO
 
-def trajectory_history(track_id, positions, history, frame):
+def load_tracking_model():
     """
-    Store and visualize the filtered 2D trajectory of a tracked object
+    Load the YOLO model used for object detection and tracking.
+
+    Returns:
+        Initialized YOLO model.
+    """
+    model = YOLO("yolo26n.pt") 
+    return model
+
+def track_objects(model, frame):
+    """
+    Detect and track objects in a video frame using ByteTrack.
 
     Args:
-        track_id: Persistent ID of the tracked object
-        positions: Current filtered (x, y) position
-        history: Dictionary storing position history for each track ID
-        frame: Current vifdeo frame for visualization
-    """
-    x_center = positions[0]
-    y_center = positions[1]
-    if track_id not in history:
-        history[track_id] = []
-    history[track_id].append((x_center, y_center))
+        model: Initialized YOLO model.
+        frame: Current input video frame.
 
-    for track_id, positions in history.items():
-        for i in range(0, len(positions)):
-            cv.circle(frame, (int(positions[i][0]), int(positions[i][1])), 5, (0, 255, 0), -1)
-    
+    Returns:
+        List of (track_id, bounding_box) tuples for tracked objects.
+        Each bounding box contains (x1, y1, x2, y2) pixel coordinates.
+    """
+    results = model.track(frame, persist=True, tracker="bytetrack.yaml", conf=0.25, verbose=False)
+    tracked_objects = []
+    for result in results:
+            boxes = result.boxes.xyxy.cpu().numpy()
+            if result.boxes.id is None:
+                continue
+            track_ids = result.boxes.id.cpu().numpy()
+            for box, track_id in zip(boxes, track_ids):
+                tracked_objects.append((track_id, box))
+
+    return tracked_objects
+        
