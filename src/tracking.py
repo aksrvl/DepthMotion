@@ -10,7 +10,7 @@ def load_tracking_model():
     model = YOLO("yolo26n.pt") 
     return model
 
-def track_objects(model, frame):
+def track_objects(frame, model):
     """
     Detect and track objects in a video frame using ByteTrack.
 
