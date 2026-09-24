@@ -6,10 +6,12 @@ import os
 import torch
 import matplotlib.pyplot as plt
 import kalman
+import forecasting
 
 track_history = {}
 filters = {}
 filtered_track_history = {}
+forecasts = {}
 
 with open ('./data/intrinsic.txt', 'r') as file:
     lines = file.readlines()
@@ -49,7 +51,7 @@ model = YOLO("yolo26n.pt")
 files_RGB = os.listdir("./data/Camera_0_RGB")
 files_RGB.sort()
 
-for image_file in files_RGB:
+for curr_frame, image_file in enumerate(files_RGB):
 
     frame = cv.imread("./data/Camera_0_RGB/" + image_file)
     results = model.track(frame, persist=True, tracker="bytetrack.yaml", conf=0.25, verbose=False)
@@ -81,6 +83,10 @@ for image_file in files_RGB:
                 filtered_position, velocity = kalman.filter(track_id, X, Z, filters)
                 X_filtered, Z_filtered = filtered_position
 
+                future_positions = forecasting.trajectory_forecast(X_filtered, Z_filtered, velocity, curr_frame)
+
+                forecasts[track_id] = future_positions
+
                 if track_id not in track_history:
                     track_history[track_id] = []
 
@@ -89,6 +95,8 @@ for image_file in files_RGB:
 
                 track_history[track_id].append((float(X), float(Z)))
                 filtered_track_history[track_id].append((float(X_filtered), float(Z_filtered)))
+
+print(forecasts[5])
 
 # Compare raw and Kalman-filtered BEV trajectory for a single track
 track_to_plot = 5
@@ -99,6 +107,9 @@ raw_Z = []
 filtered_X = []
 filtered_Z = []
 
+forecast_X = []
+forecast_Z = []
+
 for X, Z in track_history[track_to_plot]:
     raw_X.append(X)
     raw_Z.append(Z)
@@ -106,6 +117,10 @@ for X, Z in track_history[track_to_plot]:
 for X, Z in filtered_track_history[track_to_plot]:
     filtered_X.append(X)
     filtered_Z.append(Z)
+
+for frame_idx, X, Z in forecasts[track_to_plot]:
+    forecast_X.append(X)
+    forecast_Z.append(Z)
 
 plt.figure(figsize=(10, 8))
 
@@ -125,6 +140,16 @@ plt.plot(
     markersize=4,
     linewidth=2,
     label="Kalman filtered trajectory"
+)
+
+plt.plot(
+    forecast_X,
+    forecast_Z,
+    marker="x",
+    markersize=6,
+    linewidth=2,
+    linestyle="--",
+    label="10-frame forecast"
 )
 
 plt.scatter(

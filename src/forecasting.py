@@ -24,5 +24,5 @@ def trajectory_forecast(X, Z, velocity, curr_frame):
     for n in range(1, 11):
         future_X = curr_X + n*v_X
         future_Z = curr_Z+ n*v_Z
-        future_positions.append((curr_frame+n, future_X, future_Z))
+        future_positions.append((curr_frame+n, float(future_X), float(future_Z)))
     return future_positions
