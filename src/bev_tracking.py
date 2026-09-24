@@ -5,8 +5,11 @@ import sys
 import os
 import torch
 import matplotlib.pyplot as plt
+import kalman
 
 track_history = {}
+filters = {}
+filtered_track_history = {}
 
 with open ('./data/intrinsic.txt', 'r') as file:
     lines = file.readlines()
@@ -43,13 +46,10 @@ depth_model.eval()
 
 model = YOLO("yolo26n.pt")
 
-files_depth = os.listdir("./data/Camera_0_depth")
 files_RGB = os.listdir("./data/Camera_0_RGB")
-
-files_depth.sort()
 files_RGB.sort()
 
-for image_file, depth_file in zip(files_RGB, files_depth):
+for image_file in files_RGB:
 
     frame = cv.imread("./data/Camera_0_RGB/" + image_file)
     results = model.track(frame, persist=True, tracker="bytetrack.yaml", conf=0.25, verbose=False)
@@ -77,28 +77,56 @@ for image_file, depth_file in zip(files_RGB, files_depth):
                 v = int(y2)
                 Z = pred_depth
                 X = (u - cx)*(Z/fx)
+
+                filtered_position, velocity = kalman.filter(track_id, X, Z, filters)
+                X_filtered, Z_filtered = filtered_position
+
                 if track_id not in track_history:
                     track_history[track_id] = []
+
+                if track_id not in filtered_track_history:
+                    filtered_track_history[track_id] = []
+
                 track_history[track_id].append((float(X), float(Z)))
+                filtered_track_history[track_id].append((float(X_filtered), float(Z_filtered)))
+
+# Compare raw and Kalman-filtered BEV trajectory for a single track
+track_to_plot = 5
+
+raw_X = []
+raw_Z = []
+
+filtered_X = []
+filtered_Z = []
+
+for X, Z in track_history[track_to_plot]:
+    raw_X.append(X)
+    raw_Z.append(Z)
+
+for X, Z in filtered_track_history[track_to_plot]:
+    filtered_X.append(X)
+    filtered_Z.append(Z)
 
 plt.figure(figsize=(10, 8))
-for key in track_history:
-    print("ID", key, "->", track_history[key])
-    if len(track_history[key]) < 5:
-        continue
-    X_values = []
-    Z_values = []
-    for pair in track_history[key]:
-        X_values.append(pair[0])
-        Z_values.append(pair[1])
-    plt.plot(
-        X_values,
-        Z_values,
-        marker="o",
-        markersize=4,
-        linewidth=1.5,
-        label=f"ID {int(key)}"
-    )
+
+plt.plot(
+    raw_X,
+    raw_Z,
+    marker="o",
+    markersize=5,
+    linewidth=1.5,
+    label="Raw depth trajectory"
+)
+
+plt.plot(
+    filtered_X,
+    filtered_Z,
+    marker="o",
+    markersize=4,
+    linewidth=2,
+    label="Kalman filtered trajectory"
+)
+
 plt.scatter(
     0,
     0,
@@ -106,16 +134,16 @@ plt.scatter(
     s=120,
     label="Camera"
 )
+
 plt.xlim(-15, 15)
 plt.ylim(0, 80)
+
 plt.xlabel("X Position (m)")
 plt.ylabel("Depth Z (m)")
-plt.title("Tracked Object Trajectories in BEV")
+plt.title(f"Raw vs Kalman-Filtered BEV Trajectory — Track ID {track_to_plot}")
+
 plt.grid(alpha=0.3)
-plt.legend(
-    bbox_to_anchor=(1.02, 1),
-    loc="upper left"
-)
+plt.legend()
 
 plt.tight_layout()
 plt.show()
