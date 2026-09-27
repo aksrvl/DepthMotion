@@ -39,7 +39,7 @@ def draw_bev(track_history, forecasts):
 
     ax.set_xlabel("X Position (m)")
     ax.set_ylabel("Depth Z (m)")
-    ax.set_title("DepthMotion — Bird's-Eye View")
+    ax.set_title("Bird's-Eye View")
     ax.grid(alpha=0.3)
 
     ax.scatter(
@@ -54,7 +54,7 @@ def draw_bev(track_history, forecasts):
 
     # Filtered trajectory history
     for track_id, positions in track_history.items():
-        positions = positions[-20:]
+        positions = positions[-10:]
 
         if len(positions) < 2:
             continue
@@ -68,8 +68,20 @@ def draw_bev(track_history, forecasts):
             X_history,
             Z_history,
             marker="o",
-            markersize=3,
-            color=color
+            markersize=2,
+            linewidth=1.5,
+            color=color,
+            alpha=0.45
+        )
+
+        ax.scatter(
+            X_history[-1],
+            Z_history[-1],
+            s=90,
+            color=color,
+            edgecolors="black",
+            linewidths=2,
+            zorder=5
         )
 
         # Remember the color assigned by matplotlib
@@ -110,7 +122,9 @@ def draw_bev(track_history, forecasts):
             linestyle="--",
             marker="x",
             markersize=4,
-            color=track_colors[track_id]
+            color=track_colors[track_id],
+            alpha=0.9,
+            zorder=4
         )
 
     plt.tight_layout()

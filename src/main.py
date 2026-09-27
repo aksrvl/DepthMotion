@@ -16,6 +16,9 @@ fx, fy, cx, cy = geometry.load_intrinsics()
 track_history = {}
 kalman_filters = {}
 forecasts = {}
+last_seen = {}
+
+MAX_MISSING_FRAMES = 6
 
 writer = None
 
@@ -29,6 +32,8 @@ for curr_frame, image_file in enumerate(files_RGB):
     depth_map = depth.depth_map(frame, depth_model)
     
     for track_id, box in tracked_objects:
+        last_seen[track_id] = curr_frame
+
         X, Z = geometry.bbox_to_bev(box, depth_map, fx, cx)
 
         filtered_position, velocity = kalman.filter(track_id, X, Z, kalman_filters)
@@ -47,16 +52,25 @@ for curr_frame, image_file in enumerate(files_RGB):
         tracked_objects
     )
 
+    inactive_tracks = [
+        track_id
+        for track_id, last_frame in last_seen.items()
+        if curr_frame - last_frame > MAX_MISSING_FRAMES
+    ]
+
+    for track_id in inactive_tracks:
+        track_history.pop(track_id, None)
+        forecasts.pop(track_id, None)
+        kalman_filters.pop(track_id, None)
+        last_seen.pop(track_id, None)
+
     bev_image = visualization.draw_bev(
         track_history,
         forecasts
     )
 
-    frame_height = frame.shape[0]
     frame_width = frame.shape[1]
     bev_height = 500
-
-    bev_width = int(frame_width * 0.45)
 
     bev_image = cv.resize(
         bev_image,
