@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>DepthMotion</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <nav>
+        <div class="nav-content">
+            <a class="logo" href="#">DepthMotion</a>
+
+            <div class="nav-links">
+                <a href="#demo">Demo</a>
+                <a href="#pipeline">Pipeline</a>
+                <a href="#results">Results</a>
+                <a href="#about">About</a>
+            </div>
+        </div>
+    </nav>
+
+
+    <main>
+
+        <!-- HERO -->
+
+        <section class="hero">
+
+            <p class="eyebrow">COMPUTER VISION · 3D PERCEPTION</p>
+
+            <h1>DepthMotion</h1>
+
+            <h2>
+                Monocular 3D Perception and
+                Short-Term Trajectory Forecasting
+            </h2>
+
+            <p class="hero-description">
+                A monocular computer vision pipeline that estimates
+                object positions in 3D, tracks their motion and predicts
+                short-term trajectories from RGB video.
+            </p>
+
+            <div class="hero-buttons">
+                <a class="button primary" href="#demo">
+                    View Demo
+                </a>
+
+                <a class="button secondary"
+                   href="https://github.com/aksrvl/DepthMotion.git"
+                   target="_blank">
+                    GitHub Repository
+                </a>
+            </div>
+
+        </section>
+
+
+        <!-- DEMO -->
+
+        <section id="demo">
+
+            <div class="section-heading">
+                <p class="eyebrow">SYSTEM DEMO</p>
+                <h2>From RGB video to motion in 3D</h2>
+            </div>
+
+            <div class="demo-container">
+                <video autoplay muted loop playsinline controls>
+                    <source src="assets/depthmotion_demo.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <p class="caption">
+                Object detection and tracking in the RGB view with
+                estimated trajectories and short-term forecasts visualized
+                in bird's-eye view.
+            </p>
+
+        </section>
+
+
+        <!-- RESEARCH QUESTION -->
+
+        <section class="research-section">
+
+            <p class="eyebrow">RESEARCH QUESTION</p>
+
+            <blockquote>
+                Can monocular depth estimation provide sufficiently useful
+                3D spatial information for short-term trajectory forecasting
+                in a real-time vision system?
+            </blockquote>
+
+            <p>
+                The project investigates how errors in monocular depth
+                estimation propagate through 3D localization, motion
+                estimation and trajectory forecasting.
+            </p>
+
+        </section>
+
+
+        <!-- PIPELINE -->
+
+        <section id="pipeline">
+
+            <div class="section-heading">
+                <p class="eyebrow">PIPELINE</p>
+                <h2>System architecture</h2>
+            </div>
+
+            <div class="pipeline">
+
+                <div class="pipeline-item">
+                    <span>01</span>
+                    <strong>RGB Video</strong>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="pipeline-item">
+                    <span>02</span>
+                    <strong>YOLO</strong>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="pipeline-item">
+                    <span>03</span>
+                    <strong>ByteTrack</strong>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="pipeline-item">
+                    <span>04</span>
+                    <strong>Metric Depth</strong>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="pipeline-item">
+                    <span>05</span>
+                    <strong>3D Geometry</strong>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="pipeline-item">
+                    <span>06</span>
+                    <strong>Kalman Filter</strong>
+                </div>
+
+                <div class="arrow">→</div>
+
+                <div class="pipeline-item">
+                    <span>07</span>
+                    <strong>Forecast</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- RESULTS -->
+
+        <section id="results">
+
+            <div class="section-heading">
+                <p class="eyebrow">EXPERIMENTS</p>
+                <h2>Depth evaluation</h2>
+
+                <p>
+                    Metric depth was evaluated against Virtual KITTI 2
+                    ground truth to quantify the spatial uncertainty entering
+                    the trajectory pipeline.
+                </p>
+            </div>
+
+
+            <div class="metrics">
+
+                <div class="metric-card">
+                    <span class="metric-value">4.01 m</span>
+                    <span class="metric-name">MAE</span>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-value">6.06 m</span>
+                    <span class="metric-name">RMSE</span>
+                </div>
+
+                <div class="metric-card">
+                    <span class="metric-value">13.14%</span>
+                    <span class="metric-name">AbsRel</span>
+                </div>
+
+            </div>
+
+
+            <div class="finding">
+
+                <div>
+                    <p class="eyebrow">KEY FINDING</p>
+
+                    <h3>
+                        Depth uncertainty increases substantially
+                        with distance.
+                    </h3>
+
+                    <p>
+                        Mean absolute depth error increases from approximately
+                        <strong>0.66 m at 0–10 m</strong> to
+                        <strong>7.64 m at 40–50 m</strong>.
+                        This creates distance-dependent uncertainty in
+                        downstream 3D motion estimation and forecasting.
+                    </p>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ABOUT -->
+
+        <section id="about">
+
+            <div class="section-heading">
+                <p class="eyebrow">IMPLEMENTATION</p>
+                <h2>Technology</h2>
+            </div>
+
+            <div class="tech-list">
+                <span>Python</span>
+                <span>PyTorch</span>
+                <span>OpenCV</span>
+                <span>YOLO</span>
+                <span>ByteTrack</span>
+                <span>Depth Anything V2</span>
+                <span>Kalman Filter</span>
+                <span>Virtual KITTI 2</span>
+            </div>
+
+
+            <div class="limitations">
+
+                <h3>Work in progress</h3>
+
+                <p>
+                    Quantitative trajectory evaluation is currently in
+                    progress. The final study will evaluate short-term
+                    forecasting error in metric 3D space and analyze how
+                    monocular depth uncertainty affects downstream motion
+                    prediction.
+                </p>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+        <p>DepthMotion · Computer Vision Project</p>
+    </footer>
+
+</body>
+</html>
